@@ -56,3 +56,24 @@ export interface TransactionDetails extends Transaction {
   processingFee: number;
   subtotal: number;
 }
+export type BookingStatus = "Confirmed" | "Completed" | "Pending" | "Cancelled";
+
+export interface Booking {
+  id: number;
+  bookingId: string;
+  customerId: number;
+  customerName: string;
+  customerImage: string;
+  service: string;
+  date: string;
+  duration: string;
+  status: BookingStatus;
+  amount: number;
+}
+
+export interface BookingsResult {
+  bookings: Booking[];
+  total: number;
+  page: number;
+  limit: number;
+}

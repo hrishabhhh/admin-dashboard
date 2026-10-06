@@ -9,6 +9,9 @@ import type {
   UserRole,
   UserStatus,
   UsersResult,
+  Booking,
+  BookingStatus,
+  BookingsResult,
 } from "@/types";
 
 const API_URL = "https://dummyjson.com";
@@ -326,5 +329,116 @@ export async function getTransaction(id: number): Promise<TransactionDetails> {
 
     processingFee,
     subtotal,
+  };
+}
+
+const bookingServices = [
+  "Business Consultation",
+  "Technical Support",
+  "Executive Coaching",
+  "Strategy Session",
+  "Personal Training",
+  "Security Assessment",
+  "IT Consultation",
+  "Platform Audit",
+  "Database Migration",
+];
+
+const bookingAmounts = [180, 120, 250, 180, 95, 600, 250, 420, 1100];
+
+const bookingDurations = [
+  "1.5 hrs",
+  "1.0 hr",
+  "2.0 hrs",
+  "1.5 hrs",
+  "1.0 hr",
+  "1.5 hrs",
+  "1.0 hr",
+  "2.0 hrs",
+];
+
+function getBookingStatus(id: number): BookingStatus {
+  if (id % 7 === 0) {
+    return "Cancelled";
+  }
+
+  if (id % 4 === 0) {
+    return "Pending";
+  }
+
+  if (id % 3 === 0) {
+    return "Completed";
+  }
+
+  return "Confirmed";
+}
+
+function getBookingDate(id: number) {
+  const date = new Date(2024, 9, 15);
+
+  date.setDate(date.getDate() - (id - 1));
+
+  const hour = 9 + ((id * 2) % 8);
+  const minute = id % 2 === 0 ? "30" : "00";
+
+  const datePart = date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+
+  return `${datePart} ${String(hour).padStart(2, "0")}:${minute}`;
+}
+
+export async function getBookings({
+  page,
+  limit = 8,
+}: {
+  page: number;
+  limit?: number;
+}): Promise<BookingsResult> {
+  const skip = (page - 1) * limit;
+
+  const response = await fetch(`${API_URL}/users?limit=${limit}&skip=${skip}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to load bookings");
+  }
+
+  const data: DummyUsersResponse = await response.json();
+
+  const bookings: Booking[] = data.users.map((user) => {
+    const serviceIndex = (user.id - 1) % bookingServices.length;
+
+    const durationIndex = (user.id - 1) % bookingDurations.length;
+
+    return {
+      id: user.id,
+
+      bookingId: `BKG-${2342 - user.id}`,
+
+      customerId: user.id,
+
+      customerName: `${user.firstName} ${user.lastName}`,
+
+      customerImage: user.image,
+
+      service: bookingServices[serviceIndex],
+
+      date: getBookingDate(user.id),
+
+      duration: bookingDurations[durationIndex],
+
+      status: getBookingStatus(user.id),
+
+      amount: bookingAmounts[serviceIndex],
+    };
+  });
+
+  return {
+    bookings,
+    total: data.total,
+    page,
+    limit,
   };
 }
