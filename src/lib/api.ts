@@ -1,11 +1,30 @@
 import type {
   AdminUser,
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+  TransactionsResult,
   UserDetails,
   UserRole,
   UserStatus,
   UsersResult,
 } from "@/types";
+
 const API_URL = "https://dummyjson.com";
+
+type DummyCart = {
+  id: number;
+  userId: number;
+  total: number;
+  discountedTotal: number;
+};
+
+type DummyCartsResponse = {
+  carts: DummyCart[];
+  total: number;
+  skip: number;
+  limit: number;
+};
 
 type DummyUser = {
   id: number;
@@ -151,5 +170,110 @@ export async function getUser(id: number): Promise<UserDetails> {
       .filter(Boolean)
       .join(", "),
     twoFactorEnabled: user.id % 2 !== 0,
+  };
+}
+
+function getTransactionType(id: number): TransactionType {
+  if (id % 5 === 0) {
+    return "Refund";
+  }
+
+  if (id % 4 === 0) {
+    return "Transfer";
+  }
+
+  return "Payment";
+}
+
+function getTransactionStatus(id: number): TransactionStatus {
+  if (id % 7 === 0) {
+    return "Failed";
+  }
+
+  if (id % 5 === 0) {
+    return "Refunded";
+  }
+
+  if (id % 3 === 0) {
+    return "Pending";
+  }
+
+  return "Completed";
+}
+
+function getTransactionDate(id: number) {
+  const date = new Date(2024, 9, 1);
+
+  date.setDate(date.getDate() - (id - 1));
+
+  const datePart = date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const hour = 8 + ((id * 3) % 9);
+  const minute = (id * 7) % 60;
+
+  return `${datePart} ${String(hour).padStart(
+    2,
+    "0",
+  )}:${String(minute).padStart(2, "0")}`;
+}
+
+export async function getTransactions({
+  page,
+  limit = 8,
+}: {
+  page: number;
+  limit?: number;
+}): Promise<TransactionsResult> {
+  const skip = (page - 1) * limit;
+
+  const [cartsResponse, usersResponse] = await Promise.all([
+    fetch(`${API_URL}/carts?limit=${limit}&skip=${skip}`),
+    fetch(`${API_URL}/users?limit=100`),
+  ]);
+
+  if (!cartsResponse.ok || !usersResponse.ok) {
+    throw new Error("Failed to load transactions");
+  }
+
+  const cartsData: DummyCartsResponse = await cartsResponse.json();
+
+  const usersData: DummyUsersResponse = await usersResponse.json();
+
+  const usersMap = new Map(usersData.users.map((user) => [user.id, user]));
+
+  const transactions: Transaction[] = cartsData.carts.map((cart) => {
+    const user = usersMap.get(cart.userId);
+
+    const type = getTransactionType(cart.id);
+
+    const status = getTransactionStatus(cart.id);
+
+    const amount =
+      type === "Refund" ? -cart.discountedTotal : cart.discountedTotal;
+
+    return {
+      id: cart.id,
+      transactionId: `TXN-${String(1083 - cart.id)}`,
+      userId: cart.userId,
+      customerName: user
+        ? `${user.firstName} ${user.lastName}`
+        : "Unknown User",
+      customerImage: user?.image ?? "",
+      type,
+      amount,
+      status,
+      date: getTransactionDate(cart.id),
+    };
+  });
+
+  return {
+    transactions,
+    total: cartsData.total,
+    page,
+    limit,
   };
 }

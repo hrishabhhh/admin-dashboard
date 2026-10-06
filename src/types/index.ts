@@ -19,9 +19,33 @@ export interface UsersResult {
   page: number;
   limit: number;
 }
+
 export interface UserDetails extends AdminUser {
   phone: string;
   birthDate: string;
   address: string;
   twoFactorEnabled: boolean;
+}
+
+export type TransactionType = "Payment" | "Refund" | "Transfer";
+
+export type TransactionStatus = "Completed" | "Pending" | "Failed" | "Refunded";
+
+export interface Transaction {
+  id: number;
+  transactionId: string;
+  userId: number;
+  customerName: string;
+  customerImage: string;
+  type: TransactionType;
+  amount: number;
+  status: TransactionStatus;
+  date: string;
+}
+
+export interface TransactionsResult {
+  transactions: Transaction[];
+  total: number;
+  page: number;
+  limit: number;
 }
