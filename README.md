@@ -6,7 +6,7 @@ The project converts the provided Figma design into a production-style frontend 
 
 ## Live Demo
 
-> Add the Vercel deployment URL here after deployment.
+> https://admin-dashboard-omega-three-51.vercel.app/
 
 ## Features
 
