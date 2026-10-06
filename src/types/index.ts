@@ -77,3 +77,13 @@ export interface BookingsResult {
   page: number;
   limit: number;
 }
+
+export interface BookingDetails extends Booking {
+  customerEmail: string;
+  customerPhone: string;
+  location: string;
+  notes: string;
+  paymentStatus: "Paid";
+  invoiceId: string;
+  previousBookings: number;
+}

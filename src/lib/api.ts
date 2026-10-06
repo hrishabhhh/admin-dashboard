@@ -1,5 +1,9 @@
 import type {
   AdminUser,
+  Booking,
+  BookingDetails,
+  BookingStatus,
+  BookingsResult,
   Transaction,
   TransactionDetails,
   TransactionStatus,
@@ -9,9 +13,6 @@ import type {
   UserRole,
   UserStatus,
   UsersResult,
-  Booking,
-  BookingStatus,
-  BookingsResult,
 } from "@/types";
 
 const API_URL = "https://dummyjson.com";
@@ -390,6 +391,25 @@ function getBookingDate(id: number) {
   return `${datePart} ${String(hour).padStart(2, "0")}:${minute}`;
 }
 
+function mapBooking(user: DummyUser): Booking {
+  const serviceIndex = (user.id - 1) % bookingServices.length;
+
+  const durationIndex = (user.id - 1) % bookingDurations.length;
+
+  return {
+    id: user.id,
+    bookingId: `BKG-${2342 - user.id}`,
+    customerId: user.id,
+    customerName: `${user.firstName} ${user.lastName}`,
+    customerImage: user.image,
+    service: bookingServices[serviceIndex],
+    date: getBookingDate(user.id),
+    duration: bookingDurations[durationIndex],
+    status: getBookingStatus(user.id),
+    amount: bookingAmounts[serviceIndex],
+  };
+}
+
 export async function getBookings({
   page,
   limit = 8,
@@ -407,38 +427,43 @@ export async function getBookings({
 
   const data: DummyUsersResponse = await response.json();
 
-  const bookings: Booking[] = data.users.map((user) => {
-    const serviceIndex = (user.id - 1) % bookingServices.length;
-
-    const durationIndex = (user.id - 1) % bookingDurations.length;
-
-    return {
-      id: user.id,
-
-      bookingId: `BKG-${2342 - user.id}`,
-
-      customerId: user.id,
-
-      customerName: `${user.firstName} ${user.lastName}`,
-
-      customerImage: user.image,
-
-      service: bookingServices[serviceIndex],
-
-      date: getBookingDate(user.id),
-
-      duration: bookingDurations[durationIndex],
-
-      status: getBookingStatus(user.id),
-
-      amount: bookingAmounts[serviceIndex],
-    };
-  });
+  const bookings: Booking[] = data.users.map(mapBooking);
 
   return {
     bookings,
     total: data.total,
     page,
     limit,
+  };
+}
+
+export async function getBooking(id: number): Promise<BookingDetails> {
+  const response = await fetch(`${API_URL}/users/${id}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to load booking");
+  }
+
+  const user: DummyUser = await response.json();
+
+  const booking = mapBooking(user);
+
+  return {
+    ...booking,
+
+    customerEmail: user.email,
+
+    customerPhone: user.phone,
+
+    location: "Virtual (Zoom link enclosed)",
+
+    notes:
+      "Please prepare relevant project details and requirements before the session.",
+
+    paymentStatus: "Paid",
+
+    invoiceId: `INV-${20418 + id}`,
+
+    previousBookings: 8 + (id % 7),
   };
 }

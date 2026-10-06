@@ -1,8 +1,8 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-
 import {
+  getBooking,
   getBookings,
   getTransaction,
   getTransactions,
@@ -60,5 +60,13 @@ export function useBookings(page: number, limit = 8) {
         limit,
       }),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useBooking(id: number) {
+  return useQuery({
+    queryKey: ["booking", id],
+    queryFn: () => getBooking(id),
+    enabled: Number.isInteger(id) && id > 0,
   });
 }
