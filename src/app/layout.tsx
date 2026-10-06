@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
+
+import { AppShell } from "@/components/AppShell";
+
 import { Providers } from "./providers";
 
 const inter = Inter({
@@ -20,8 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-slate-50 text-slate-900`}>
-        <Providers>{children}</Providers>
+      <body
+        className={`${inter.className} bg-slate-50 text-slate-900 antialiased`}
+      >
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );
