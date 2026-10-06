@@ -4,12 +4,24 @@ import { Bell, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 function getPageTitle(pathname: string) {
+  if (/^\/users\/[^/]+$/.test(pathname)) {
+    return "User Directory";
+  }
+
   if (pathname.startsWith("/users")) {
     return "User Management";
   }
 
+  if (/^\/transactions\/[^/]+$/.test(pathname)) {
+    return "Transactions Log";
+  }
+
   if (pathname.startsWith("/transactions")) {
     return "Transactions Ledger";
+  }
+
+  if (/^\/bookings\/[^/]+$/.test(pathname)) {
+    return "Booking Management";
   }
 
   if (pathname.startsWith("/bookings")) {

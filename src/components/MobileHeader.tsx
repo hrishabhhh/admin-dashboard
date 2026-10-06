@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, Settings, ArrowLeft } from "lucide-react";
+import { Bell, Menu, Settings, ArrowLeft, Pencil } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 
@@ -36,13 +36,23 @@ export function MobileHeader() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="mr-4 flex size-8 items-center justify-center"
+          className="flex size-8 items-center justify-center"
           aria-label="Go back"
         >
           <ArrowLeft className="size-5" />
         </button>
 
-        <h1 className="font-semibold text-slate-900">{detailTitle}</h1>
+        <h1 className="ml-2 font-semibold text-slate-900">{detailTitle}</h1>
+
+        {detailTitle === "User Detail" && (
+          <button
+            type="button"
+            className="ml-auto flex size-8 items-center justify-center rounded-full border border-slate-200"
+            aria-label="Edit user"
+          >
+            <Pencil className="size-4 text-slate-600" />
+          </button>
+        )}
       </header>
     );
   }

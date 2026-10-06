@@ -1,5 +1,10 @@
-import type { AdminUser, UserRole, UserStatus, UsersResult } from "@/types";
-
+import type {
+  AdminUser,
+  UserDetails,
+  UserRole,
+  UserStatus,
+  UsersResult,
+} from "@/types";
 const API_URL = "https://dummyjson.com";
 
 type DummyUser = {
@@ -8,8 +13,14 @@ type DummyUser = {
   lastName: string;
   email: string;
   image: string;
+  phone: string;
+  birthDate: string;
+  address: {
+    address: string;
+    city: string;
+    state: string;
+  };
 };
-
 type DummyUsersResponse = {
   users: DummyUser[];
   total: number;
@@ -114,5 +125,31 @@ export async function getUsers({
     total: data.total,
     page,
     limit,
+  };
+}
+
+export async function getUser(id: number): Promise<UserDetails> {
+  const response = await fetch(`${API_URL}/users/${id}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to load user");
+  }
+
+  const user: DummyUser = await response.json();
+
+  const mappedUser = mapUser(user);
+
+  return {
+    ...mappedUser,
+    phone: user.phone,
+    birthDate: new Date(user.birthDate).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }),
+    address: [user.address.address, user.address.city, user.address.state]
+      .filter(Boolean)
+      .join(", "),
+    twoFactorEnabled: user.id % 2 !== 0,
   };
 }

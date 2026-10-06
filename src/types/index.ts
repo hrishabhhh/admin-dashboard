@@ -19,3 +19,9 @@ export interface UsersResult {
   page: number;
   limit: number;
 }
+export interface UserDetails extends AdminUser {
+  phone: string;
+  birthDate: string;
+  address: string;
+  twoFactorEnabled: boolean;
+}

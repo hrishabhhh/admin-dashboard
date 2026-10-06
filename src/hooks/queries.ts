@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-import { getUsers } from "@/lib/api";
+import { getUser, getUsers } from "@/lib/api";
 
 export function useUsers(page: number, search: string, limit = 8) {
   return useQuery({
@@ -14,5 +14,13 @@ export function useUsers(page: number, search: string, limit = 8) {
         limit,
       }),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useUser(id: number) {
+  return useQuery({
+    queryKey: ["user", id],
+    queryFn: () => getUser(id),
+    enabled: Number.isInteger(id) && id > 0,
   });
 }
