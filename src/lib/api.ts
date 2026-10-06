@@ -1,6 +1,7 @@
 import type {
   AdminUser,
   Transaction,
+  TransactionDetails,
   TransactionStatus,
   TransactionType,
   TransactionsResult,
@@ -275,5 +276,55 @@ export async function getTransactions({
     total: cartsData.total,
     page,
     limit,
+  };
+}
+
+export async function getTransaction(id: number): Promise<TransactionDetails> {
+  const cartResponse = await fetch(`${API_URL}/carts/${id}`);
+
+  if (!cartResponse.ok) {
+    throw new Error("Failed to load transaction");
+  }
+
+  const cart: DummyCart = await cartResponse.json();
+
+  const userResponse = await fetch(`${API_URL}/users/${cart.userId}`);
+
+  if (!userResponse.ok) {
+    throw new Error("Failed to load transaction user");
+  }
+
+  const user: DummyUser = await userResponse.json();
+
+  const type = getTransactionType(cart.id);
+  const status = getTransactionStatus(cart.id);
+
+  const amount =
+    type === "Refund" ? -cart.discountedTotal : cart.discountedTotal;
+
+  const processingFee = Math.round(Math.abs(amount) * 0.032 * 100) / 100;
+
+  const subtotal = Math.round((Math.abs(amount) - processingFee) * 100) / 100;
+
+  return {
+    id: cart.id,
+    transactionId: `TXN-${1083 - cart.id}`,
+    userId: cart.userId,
+    customerName: `${user.firstName} ${user.lastName}`,
+    customerImage: user.image,
+    type,
+    amount,
+    status,
+    date: getTransactionDate(cart.id),
+
+    paymentMethod:
+      cart.id % 2 === 0
+        ? "Credit Card (Visa ending in 4582)"
+        : "Corporate Mastercard (**** 7821)",
+
+    referenceId: `REF-${98342718 + cart.id}`,
+
+    processingFee,
+    subtotal,
   };
 }

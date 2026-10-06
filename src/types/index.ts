@@ -49,3 +49,10 @@ export interface TransactionsResult {
   page: number;
   limit: number;
 }
+
+export interface TransactionDetails extends Transaction {
+  paymentMethod: string;
+  referenceId: string;
+  processingFee: number;
+  subtotal: number;
+}

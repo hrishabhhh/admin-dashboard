@@ -1,8 +1,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getTransactions, getUser, getUsers } from "@/lib/api";
-
+import { getTransaction, getTransactions, getUser, getUsers } from "@/lib/api";
 export function useUsers(page: number, search: string, limit = 8) {
   return useQuery({
     queryKey: ["users", page, search, limit],
@@ -33,5 +32,13 @@ export function useTransactions(page: number, limit = 8) {
         limit,
       }),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useTransaction(id: number) {
+  return useQuery({
+    queryKey: ["transaction", id],
+    queryFn: () => getTransaction(id),
+    enabled: Number.isInteger(id) && id > 0,
   });
 }
